@@ -1,0 +1,27 @@
+MAPAS/?.DAT - map properties, a list of properties in a human readable format. 
+        (I think it is codepage CP220, Spanish.)
+    mapas\\graf.gr0     <-- the tileset for that level
+    loc1                <-- enemy sprites
+    Disparo=100         <-- other properties related to spawn rates, etc
+    Cañon=200
+    Vel=1
+
+MAPAS/FASE?.PC1 - map data
+    Header:
+        u16: map height in tiles
+        u16: map width
+        u16: map width (dupe)
+        u32: size of remaining data in bytes
+    
+    Level data: 
+        Array of records with two fields:
+            u16: tile idx (starts from 1, 0 is nothing)
+            u16: tile flags (determines collision, spawns, and animated tiles)
+    
+    tiles are arranged in level column order.
+
+MAPAS/GRAF.GR? - map tile gfx
+    Palette: VGA palette. 256*3 bytes. Shift by 2 to get 24bit rgb.
+    u8: unused. always 1?
+    u32: size of remaining graphical data in bytes
+    Array of tile data, uncompressed, 16x16
