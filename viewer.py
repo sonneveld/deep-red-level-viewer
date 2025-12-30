@@ -115,6 +115,11 @@ def load_level(level_num):
 
     return tile_by_id, fase
 
+def save_screenshot(screen, level_num):
+    screenshot_filename = f"deep-red-level-{level_num}.png"
+    pygame.image.save(screen, screenshot_filename)
+    print(f"Saved {screenshot_filename}")
+
 
 def main():
 
@@ -142,15 +147,48 @@ def main():
 
     game_running = True
 
+
+    def render_level_to_surface(dest=None, show_meta=False):
+
+        if dest is None:
+            dest_width = fase.level_width*16
+            dest_height = fase.level_height*16
+            dest = pygame.Surface( (dest_width, dest_height), depth=8)
+            p = tile_by_id[1].get_palette()
+            dest.set_palette(p)
+            screen.fill( 0 )
+
+        x = 0
+        y = 0
+
+        for idx  in range(0, fase.level_width):
+            y = 0
+            for a,b in fase.get_column(idx):
+                if a:
+                    dest.blit( tile_by_id[a], (x,y) )
+
+                if show_meta:
+
+                    if b not in s_by_number:
+                        s = my_font.render(f"{b:x}", True, (0xff,0xff,0, 0xff))
+                        s_by_number[b] = s
+                    
+                    if b:
+                        dest.blit( s_by_number[b], (x,y))
+
+                y += 16
+            x += 16
+
+        return dest
+
     while game_running:
-        screen.fill( (0x20,0,0x20) )
 
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key in (pygame.K_ESCAPE, pygame.K_q):
                     game_running = False
                 elif event.key == pygame.K_LEFT:
                     new_level = level_num - 1
@@ -168,31 +206,12 @@ def main():
                         pass
                 elif event.key == pygame.K_m:
                     show_meta = not show_meta
+                elif event.key == pygame.K_s:
+                    screenshot_surf = render_level_to_surface(None)
+                    save_screenshot(screenshot_surf, level_num)
 
-
-        x = 0
-        y = 0
-
-        bset = set()
-
-        for idx  in range(0, fase.level_width):
-            y = 0
-            for a,b in fase.get_column(idx):
-                bset.add(b&0xff)
-                if a:
-                    screen.blit( tile_by_id[a], (x,y) )
-
-                if show_meta:
-
-                    if b not in s_by_number:
-                        s = my_font.render(f"{b:x}", True, (0xff,0xff,0, 0xff))
-                        s_by_number[b] = s
-                    
-                    if b:
-                        screen.blit( s_by_number[b], (x,y))
-
-                y += 16
-            x += 16
+        screen.fill( (0x20,0,0x20) )
+        render_level_to_surface(screen, show_meta)
 
         pygame.display.flip()
         root_clock.tick(PYGAME_FPS)
